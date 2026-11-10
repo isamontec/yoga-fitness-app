@@ -31,36 +31,20 @@ ESQUEMA = "ADMIN"
 
 @st.cache_resource
 def conectar():
-    """Obtiene la conexión a Oracle leyendo secrets.toml de forma segura."""
+    """Conecta a Oracle utilizando los secretos guardados en secrets.toml."""
     s = st.secrets["oracle"]
-    
-    # Si incluye lib_dir (Windows Thick Mode)
     if "lib_dir" in s:
         oracledb.init_oracle_client(lib_dir=s["lib_dir"], config_dir=s.get("config_dir"))
         return oracledb.connect(user=s["user"], password=s["password"], dsn=s["dsn"])
     
-    # Modo Thin (Mac / Streamlit Cloud)
-    kwargs = {}
-    if s.get("config_dir") and not str(s.get("config_dir")).startswith("/app"):
-        kwargs["config_dir"] = s.get("config_dir")
-        kwargs["wallet_location"] = s.get("wallet_location", s.get("config_dir"))
-    if s.get("wallet_password"):
-        kwargs["wallet_password"] = s.get("wallet_password")
-        
     return oracledb.connect(
         user=s["user"],
         password=s["password"],
         dsn=s["dsn"],
-        **kwargs
+        config_dir=s.get("config_dir"),
+        wallet_location=s.get("wallet_location", s.get("config_dir")),
+        wallet_password=s.get("wallet_password")
     )
-
-try:
-    conn = conectar()
-except Exception as err:
-    st.error(f"❌ Error conectando a la base de datos Oracle: {err}")
-    st.info("Revisa la configuración de Secrets y que los datos del wallet/usuario sean correctos.")
-    st.stop()
-
 
 # ---------------- 2. Funciones de Consulta y Modificación ----------------
 
