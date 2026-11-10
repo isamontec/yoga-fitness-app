@@ -28,33 +28,32 @@ st.markdown(
 ESQUEMA = "ADMIN"
 
 
-# ---------------- 1. Conexión a Oracle ----------------
+# ---------------- 1. Conexión a Oracle (Compatible con Local y Streamlit Cloud) ----------------
 
 @st.cache_resource
 def conectar():
-    """Obtiene la conexión a Oracle leyendo secrets.toml."""
+    """Obtiene la conexión a Oracle leyendo secrets.toml de forma segura."""
     s = st.secrets["oracle"]
+    
+    # Si incluye lib_dir (Windows Thick Mode)
     if "lib_dir" in s:
-        oracledb.init_oracle_client(lib_dir=s["lib_dir"], config_dir=s["config_dir"])
+        oracledb.init_oracle_client(lib_dir=s["lib_dir"], config_dir=s.get("config_dir"))
         return oracledb.connect(user=s["user"], password=s["password"], dsn=s["dsn"])
-
+    
+    # Modo Thin (Mac / Streamlit Cloud en la Nube)
+    kwargs = {}
+    if s.get("config_dir") and not s.get("config_dir").startswith("/app"):
+        kwargs["config_dir"] = s.get("config_dir")
+        kwargs["wallet_location"] = s.get("wallet_location", s.get("config_dir"))
+    if s.get("wallet_password"):
+        kwargs["wallet_password"] = s.get("wallet_password")
+        
     return oracledb.connect(
         user=s["user"],
         password=s["password"],
         dsn=s["dsn"],
-        config_dir=s["config_dir"],
-        wallet_location=s.get("wallet_location", s["config_dir"]),
-        wallet_password=s.get("wallet_password")
+        **kwargs
     )
-
-
-try:
-    conn = conectar()
-except Exception as err:
-    st.error(f"❌ Error conectando a la base de datos Oracle: {err}")
-    st.info("Revisa la carpeta .streamlit/secrets.toml y que los datos del wallet sean correctos.")
-    st.stop()
-
 
 # ---------------- 2. Funciones de Consulta y Modificación ----------------
 
