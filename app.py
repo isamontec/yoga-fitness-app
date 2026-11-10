@@ -28,19 +28,19 @@ st.markdown(
 ESQUEMA = "ADMIN"
 
 # ---------------- 1. Conexión a Oracle (Compatible con Local y Streamlit Cloud) ----------------
+
 @st.cache_resource
 def conectar():
-    """Conecta a la base de datos Oracle leyendo secrets.toml."""
+    """Obtiene la conexión a Oracle leyendo secrets.toml de forma segura."""
     s = st.secrets["oracle"]
     
-    # Modo Thick (Windows local si tiene lib_dir)
+    # Modo Thick (Windows)
     if "lib_dir" in s:
         oracledb.init_oracle_client(lib_dir=s["lib_dir"], config_dir=s.get("config_dir"))
         return oracledb.connect(user=s["user"], password=s["password"], dsn=s["dsn"])
     
-    # Modo Thin (Streamlit Cloud / Mac)
+    # Modo Thin (Mac / Streamlit Cloud)
     kwargs = {}
-    # Solo agrega config_dir si la carpeta existe realmente
     if s.get("config_dir") and not str(s.get("config_dir")).startswith("/app"):
         kwargs["config_dir"] = s.get("config_dir")
         kwargs["wallet_location"] = s.get("wallet_location", s.get("config_dir"))
@@ -53,6 +53,15 @@ def conectar():
         dsn=s["dsn"],
         **kwargs
     )
+
+# ESTA LÍNEA ES LA QUE CORRIGE EL NAMEERROR:
+try:
+    conn = conectar()
+except Exception as err:
+    st.error(f"❌ Error conectando a la base de datos Oracle: {err}")
+    st.info("Revisa la configuración de Secrets en Streamlit Cloud.")
+    st.stop()
+
 
 # ---------------- 2. Funciones de Consulta y Modificación ----------------
 
