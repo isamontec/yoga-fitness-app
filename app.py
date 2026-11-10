@@ -27,7 +27,6 @@ st.markdown(
 
 ESQUEMA = "ADMIN"
 
-
 # ---------------- 1. Conexión a Oracle (Compatible con Local y Streamlit Cloud) ----------------
 
 @st.cache_resource
@@ -40,9 +39,9 @@ def conectar():
         oracledb.init_oracle_client(lib_dir=s["lib_dir"], config_dir=s.get("config_dir"))
         return oracledb.connect(user=s["user"], password=s["password"], dsn=s["dsn"])
     
-    # Modo Thin (Mac / Streamlit Cloud en la Nube)
+    # Modo Thin (Mac / Streamlit Cloud)
     kwargs = {}
-    if s.get("config_dir") and not s.get("config_dir").startswith("/app"):
+    if s.get("config_dir") and not str(s.get("config_dir")).startswith("/app"):
         kwargs["config_dir"] = s.get("config_dir")
         kwargs["wallet_location"] = s.get("wallet_location", s.get("config_dir"))
     if s.get("wallet_password"):
@@ -55,13 +54,20 @@ def conectar():
         **kwargs
     )
 
+try:
+    conn = conectar()
+except Exception as err:
+    st.error(f"❌ Error conectando a la base de datos Oracle: {err}")
+    st.info("Revisa la configuración de Secrets y que los datos del wallet/usuario sean correctos.")
+    st.stop()
+
+
 # ---------------- 2. Funciones de Consulta y Modificación ----------------
 
 def consultar(sql, params=None):
     df = pd.read_sql(sql, conn, params=params)
-    df.columns = [c.lower() for c in df.columns]  # Asegura nombres de columna en minúsculas
+    df.columns = [c.lower() for c in df.columns]
     return df
-
 
 def modificar(sql, params=None):
     cur = conn.cursor()
@@ -72,7 +78,6 @@ def modificar(sql, params=None):
     except Exception as e:
         conn.rollback()
         raise e
-
 
 def insertar_con_id(sql, col_id, params):
     cur = conn.cursor()
@@ -90,8 +95,7 @@ def insertar_con_id(sql, col_id, params):
 
 opcion_menu = st.sidebar.radio(
     "Navegación Studio",
-    ["🏷️ Ver Planes y Precios", "🧘 Clases y Horarios", "👨‍🏫 Instructores", "📝 Inscribirse (Nuevo Cliente)",
-     "📅 Agendar Reserva", "📋 Ver mis Reservas"]
+    ["🏷️ Ver Planes y Precios", "🧘 Clases y Horarios", "👨‍🏫 Instructores", "📝 Inscribirse (Nuevo Cliente)", "📅 Agendar Reserva", "📋 Ver mis Reservas"]
 )
 
 # -----------------------------------------------------------------
@@ -111,9 +115,8 @@ if opcion_menu == "🏷️ Ver Planes y Precios":
 
     if not planes_df.empty:
         planes_df["precio"] = planes_df["precio"].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "$0.00")
-        planes_df["precio_promocional"] = planes_df["precio_promocional"].apply(
-            lambda x: f"${x:,.2f}" if pd.notnull(x) and x > 0 else "N/A")
-
+        planes_df["precio_promocional"] = planes_df["precio_promocional"].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) and x > 0 else "N/A")
+        
         st.dataframe(planes_df, use_container_width=True, hide_index=True)
 
         st.subheader("💡 Métricas de Planes")
@@ -132,9 +135,9 @@ elif opcion_menu == "🧘 Clases y Horarios":
     st.write("Filtra y conoce los horarios de nuestras sesiones:")
 
     tipo_filtro = st.selectbox("Filtrar por Tipo de Clase", ["Todos", "yoga", "pilates", "barre", "multifuncional"])
-
+    
     where_clause = "" if tipo_filtro == "Todos" else f"WHERE c_tipo_clase = '{tipo_filtro}'"
-
+    
     clases_df = consultar(f"""
         SELECT c_id_clase AS id, c_nombre_clase AS nombre_clase, c_tipo_clase AS tipo,
                c_dia AS dia, c_horario AS horario, c_salon_clase AS salon,
@@ -171,8 +174,7 @@ elif opcion_menu == "📝 Inscribirse (Nuevo Cliente)":
     st.header("📝 Formulario de Inscripción de Clientes")
     st.write("Completa tus datos y selecciona tu plan inicial para unirte al estudio:")
 
-    planes_opciones = consultar(
-        f"SELECT p_id_plan, p_nombre_plan, p_precio FROM {ESQUEMA}.plan_membresia WHERE p_estado IN ('activo', 'disponible')")
+    planes_opciones = consultar(f"SELECT p_id_plan, p_nombre_plan, p_precio FROM {ESQUEMA}.plan_membresia WHERE p_estado IN ('activo', 'disponible')")
 
     with st.form("form_inscripcion", clear_on_submit=True):
         col_a, col_b = st.columns(2)
@@ -185,12 +187,11 @@ elif opcion_menu == "📝 Inscribirse (Nuevo Cliente)":
             direccion = st.text_input("Dirección de Residencia")
             condicion_medica = st.text_input("Condición Médica / Lesiones", value="Ninguna")
             fecha_nac = st.date_input("Fecha de Nacimiento", value=dt.date(1995, 1, 1))
-
+            
             plan_elegido = st.selectbox(
                 "Selecciona tu Plan de Membresía *",
                 planes_opciones["p_id_plan"].tolist(),
-                format_func=lambda
-                    x: f"{planes_opciones[planes_opciones['p_id_plan'] == x]['p_nombre_plan'].iloc[0]} (${planes_opciones[planes_opciones['p_id_plan'] == x]['p_precio'].iloc[0]:,.2f})"
+                format_func=lambda x: f"{planes_opciones[planes_opciones['p_id_plan'] == x]['p_nombre_plan'].iloc[0]} (${planes_opciones[planes_opciones['p_id_plan'] == x]['p_precio'].iloc[0]:,.2f})"
             )
 
         btn_inscribir = st.form_submit_button("✅ Completar Inscripción")
@@ -220,8 +221,7 @@ elif opcion_menu == "📝 Inscribirse (Nuevo Cliente)":
                     "fec": fecha_nac
                 }
                 nuevo_id = insertar_con_id(SQL_INS_USUARIO, "u_id_usuario", params)
-                st.success(
-                    f"🎉 ¡Inscripción exitosa! Tu ID de usuario asignado es #{nuevo_id}. Ya puedes agendar tu clase.")
+                st.success(f"🎉 ¡Inscripción exitosa! Tu ID de usuario asignado es #{nuevo_id}. Ya puedes agendar tu clase.")
             except Exception as e:
                 st.error(f"Error al procesar la inscripción: {e}")
 
@@ -232,12 +232,9 @@ elif opcion_menu == "📅 Agendar Reserva":
     st.header("📅 Agendamiento de Clases")
     st.write("Selecciona tu nombre, la clase deseada y el instructor de tu preferencia:")
 
-    usuarios_df = consultar(
-        f"SELECT u_id_usuario, u_nombre_completo, u_id_plan FROM {ESQUEMA}.usuario WHERE u_estado = 'activo' ORDER BY u_nombre_completo ASC")
-    clases_df = consultar(
-        f"SELECT c_id_clase, c_nombre_clase, c_horario, c_dia FROM {ESQUEMA}.clases WHERE c_estado = 'programada' ORDER BY c_nombre_clase ASC")
-    instructores_df = consultar(
-        f"SELECT i_id_instructor, i_nombre_completo, i_especialidad FROM {ESQUEMA}.instructor WHERE i_estado = 'activo' ORDER BY i_nombre_completo ASC")
+    usuarios_df = consultar(f"SELECT u_id_usuario, u_nombre_completo, u_id_plan FROM {ESQUEMA}.usuario WHERE u_estado = 'activo' ORDER BY u_nombre_completo ASC")
+    clases_df = consultar(f"SELECT c_id_clase, c_nombre_clase, c_horario, c_dia FROM {ESQUEMA}.clases WHERE c_estado = 'programada' ORDER BY c_nombre_clase ASC")
+    instructores_df = consultar(f"SELECT i_id_instructor, i_nombre_completo, i_especialidad FROM {ESQUEMA}.instructor WHERE i_estado = 'activo' ORDER BY i_nombre_completo ASC")
     planes_df = consultar(f"SELECT p_id_plan, p_precio FROM {ESQUEMA}.plan_membresia")
 
     if usuarios_df.empty or clases_df.empty or instructores_df.empty:
@@ -255,19 +252,17 @@ elif opcion_menu == "📅 Agendar Reserva":
                 cls_sel = st.selectbox(
                     "2. Selecciona la Clase y Horario *",
                     clases_df["c_id_clase"].tolist(),
-                    format_func=lambda
-                        x: f"{clases_df[clases_df['c_id_clase'] == x]['c_nombre_clase'].iloc[0]} - {clases_df[clases_df['c_id_clase'] == x]['c_dia'].iloc[0]} ({clases_df[clases_df['c_id_clase'] == x]['c_horario'].iloc[0]})"
+                    format_func=lambda x: f"{clases_df[clases_df['c_id_clase'] == x]['c_nombre_clase'].iloc[0]} - {clases_df[clases_df['c_id_clase'] == x]['c_dia'].iloc[0]} ({clases_df[clases_df['c_id_clase'] == x]['c_horario'].iloc[0]})"
                 )
             with col_c2:
                 ins_sel = st.selectbox(
                     "3. Selecciona tu Instructor Preferido *",
                     instructores_df["i_id_instructor"].tolist(),
-                    format_func=lambda
-                        x: f"{instructores_df[instructores_df['i_id_instructor'] == x]['i_nombre_completo'].iloc[0]} ({instructores_df[instructores_df['i_id_instructor'] == x]['i_especialidad'].iloc[0]})"
+                    format_func=lambda x: f"{instructores_df[instructores_df['i_id_instructor'] == x]['i_nombre_completo'].iloc[0]} ({instructores_df[instructores_df['i_id_instructor'] == x]['i_especialidad'].iloc[0]})"
                 )
 
             fecha_reserva = st.date_input("4. Fecha de la Clase", value=dt.date.today())
-
+            
             btn_agendar = st.form_submit_button("🗓️ Confirmar Reserva")
 
         if btn_agendar:
