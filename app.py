@@ -186,4 +186,169 @@ elif opcion_menu == "📝 Inscribirse (Nuevo Cliente)":
             condicion_medica = st.text_input("Condición Médica / Lesiones", value="Ninguna")
             
             # RANGO EXPANDIDO DE FECHAS (1950 hasta 2010)
-            fecha_nac =
+            fecha_nac = st.date_input(
+                "Fecha de Nacimiento *",
+                value=dt.date(2000, 1, 1),
+                min_value=dt.date(1950, 1, 1),
+                max_value=dt.date(2010, 12, 31)
+            )
+            
+            plan_elegido = st.selectbox(
+                "Selecciona tu Plan de Membresía *",
+                planes_opciones["p_id_plan"].tolist(),
+                format_func=lambda x: f"{planes_opciones[planes_opciones['p_id_plan'] == x]['p_nombre_plan'].iloc[0]} (${planes_opciones[planes_opciones['p_id_plan'] == x]['p_precio'].iloc[0]:,.2f})"
+            )
+
+        btn_inscribir = st.form_submit_button("✅ Completar Inscripción")
+
+    if btn_inscribir:
+        if not nombre.strip() or not correo.strip() or not telefono.strip():
+            st.warning("⚠️ Por favor completa los campos obligatorios (*).")
+        else:
+            try:
+                SQL_INS_USUARIO = f"""
+                    INSERT INTO {ESQUEMA}.usuario (
+                        u_nombre_completo, u_id_plan, u_genero, u_estado,
+                        u_direccion_residencia, u_telefono, u_correo_electronico,
+                        u_condicion_medica, u_fecha_nacimiento
+                    ) VALUES (
+                        :nom, :pln, :gen, 'activo', :direc, :tel, :cor, :med, :fec
+                    )
+                """
+                params = {
+                    "nom": nombre.strip(),
+                    "pln": int(plan_elegido),
+                    "gen": genero,
+                    "direc": direccion.strip(),
+                    "tel": telefono.strip(),
+                    "cor": correo.strip(),
+                    "med": condicion_medica.strip(),
+                    "fec": fecha_nac
+                }
+                nuevo_id = insertar_con_id(SQL_INS_USUARIO, "u_id_usuario", params)
+                st.session_state["mi_id_usuario"] = nuevo_id
+                st.success(f"🎉 ¡Inscripción exitosa! Tu número de ID único asignado es #{nuevo_id}. Ya puedes pasar a agendar tu reserva.")
+            except Exception as e:
+                st.error(f"Error al procesar la inscripción: {e}")
+
+# -----------------------------------------------------------------
+# VISTA 5: AGENDAR RESERVA (CON VALIDACIÓN DE PLAN Y INSTRUCTORES)
+# -----------------------------------------------------------------
+elif opcion_menu == "📅 Agendar Reserva":
+    st.header("📅 Agendamiento de Clases (Personalizado)")
+    st.write("Ingresa tu ID de usuario inscrito para habilitar únicamente las clases e instructores correspondientes a tu plan:")
+
+    id_default = st.session_state.get("mi_id_usuario", 12)
+    id_usuario_ingresado = st.number_input("Ingresa tu ID Único de Cliente registrado (ej. 12):", min_value=1, value=int(id_default), step=1)
+
+    usuario_info = consultar(f"""
+        SELECT u.u_id_usuario, u.u_nombre_completo, u.u_id_plan, p.p_nombre_plan, p.p_tipo_clase, p.p_precio
+        FROM {ESQUEMA}.usuario u
+        JOIN {ESQUEMA}.plan_membresia p ON p.p_id_plan = u.u_id_plan
+        WHERE u.u_id_usuario = {id_usuario_ingresado} AND u.u_estado = 'activo'
+    """)
+
+    if usuario_info.empty:
+        st.error(f"❌ No se encontró ningún usuario activo registrado con el ID #{id_usuario_ingresado}. Inscríbete primero en la sección de Registro.")
+    else:
+        usr_row = usuario_info.iloc[0]
+        st.success(f"👤 **Cliente identificado:** {usr_row['u_nombre_completo']} | **Plan Contratado:** {usr_row['p_nombre_plan']} (Permite sólo clase de tipo: **{usr_row['p_tipo_clase'].upper()}**)")
+
+        # FILTRAR CLASES SEGÚN EL PLAN DEL CLIENTE
+        clases_permitidas = consultar(f"""
+            SELECT c_id_clase, c_nombre_clase, c_horario, c_dia, c_tipo_clase
+            FROM {ESQUEMA}.clases
+            WHERE c_estado = 'programada' AND LOWER(c_tipo_clase) = '{usr_row['p_tipo_clase'].lower()}'
+            ORDER BY c_nombre_clase ASC
+        """)
+
+        if clases_permitidas.empty:
+            st.warning(f"No hay clases programadas disponibles actualmente para la disciplina {usr_row['p_tipo_clase']}.")
+        else:
+            with st.form("form_reserva_personalizada", clear_on_submit=True):
+                col_c1, col_c2 = st.columns(2)
+                
+                with col_c1:
+                    cls_sel = st.selectbox(
+                        "1. Selecciona la Clase Permitida para tu Plan *",
+                        clases_permitidas["c_id_clase"].tolist(),
+                        format_func=lambda x: f"{clases_permitidas[clases_permitidas['c_id_clase'] == x]['c_nombre_clase'].iloc[0]} - {clases_permitidas[clases_permitidas['c_id_clase'] == x]['c_dia'].iloc[0]} ({clases_permitidas[clases_permitidas['c_id_clase'] == x]['c_horario'].iloc[0]})"
+                    )
+
+                # FILTRAR INSTRUCTORES DE LA MISMA ESPECIALIDAD DE LA CLASE
+                instructores_filtrados = consultar(f"""
+                    SELECT i_id_instructor, i_nombre_completo, i_especialidad
+                    FROM {ESQUEMA}.instructor
+                    WHERE i_estado = 'activo' AND LOWER(i_especialidad) LIKE '%{usr_row['p_tipo_clase'].lower()}%'
+                    ORDER BY i_nombre_completo ASC
+                """)
+
+                with col_c2:
+                    if not instructores_filtrados.empty:
+                        ins_sel = st.selectbox(
+                            f"2. Selecciona Instructor Especializado en {usr_row['p_tipo_clase'].title()} *",
+                            instructores_filtrados["i_id_instructor"].tolist(),
+                            format_func=lambda x: f"{instructores_filtrados[instructores_filtrados['i_id_instructor'] == x]['i_nombre_completo'].iloc[0]} ({instructores_filtrados[instructores_filtrados['i_id_instructor'] == x]['i_especialidad'].iloc[0]})"
+                        )
+                    else:
+                        st.info("No hay instructores específicos; seleccionando instructor general.")
+                        instructores_gen = consultar(f"SELECT i_id_instructor, i_nombre_completo, i_especialidad FROM {ESQUEMA}.instructor WHERE i_estado = 'activo'")
+                        ins_sel = st.selectbox(
+                            "2. Selecciona Instructor Disponible *",
+                            instructores_gen["i_id_instructor"].tolist(),
+                            format_func=lambda x: f"{instructores_gen[instructores_gen['i_id_instructor'] == x]['i_nombre_completo'].iloc[0]}"
+                        )
+
+                fecha_reserva = st.date_input("3. Fecha de la Clase", value=dt.date.today())
+                btn_agendar = st.form_submit_button("🗓️ Confirmar Reserva de mi Cupo")
+
+            if btn_agendar:
+                try:
+                    hora_clase = clases_permitidas[clases_permitidas["c_id_clase"] == cls_sel]["c_horario"].iloc[0]
+
+                    SQL_INS_RESERVA = f"""
+                        INSERT INTO {ESQUEMA}.kardex_reserva (
+                            r_id_usuario, r_id_clase, r_id_instructor, r_id_plan,
+                            r_fecha_reserva, r_hora_reserva, r_precio, r_estado_asistencia, r_estado_reserva
+                        ) VALUES (
+                            :usr, :cls, :ins, :pln, :fec, :hor, :prc, 'no asistió', 'confirmada'
+                        )
+                    """
+                    params_reserva = {
+                        "usr": int(usr_row['u_id_usuario']),
+                        "cls": int(cls_sel),
+                        "ins": int(ins_sel),
+                        "pln": int(usr_row['u_id_plan']),
+                        "fec": fecha_reserva,
+                        "hor": hora_clase,
+                        "prc": float(usr_row['p_precio'])
+                    }
+                    reserva_id = insertar_con_id(SQL_INS_RESERVA, "r_id_reserva", params_reserva)
+                    st.success(f"🎉 ¡Reserva confirmada con éxito a nombre de {usr_row['u_nombre_completo']}! Código de reserva #{reserva_id}.")
+                except Exception as e:
+                    st.error(f"Error al agendar la reserva: {e}")
+
+# -----------------------------------------------------------------
+# VISTA 6: VER MIS RESERVAS
+# -----------------------------------------------------------------
+elif opcion_menu == "📋 Ver mis Reservas":
+    st.header("📋 Historial de Reservas Agendadas")
+
+    reservas_df = consultar(f"""
+        SELECT kr.r_id_reserva AS id_reserva, u.u_nombre_completo AS cliente,
+               c.c_nombre_clase AS clase, c.c_horario AS horario, i.i_nombre_completo AS instructor,
+               pm.p_nombre_plan AS plan, kr.r_fecha_reserva AS fecha_reserva,
+               kr.r_precio AS precio, kr.r_estado_reserva AS estado
+        FROM {ESQUEMA}.kardex_reserva kr
+        JOIN {ESQUEMA}.usuario u ON u.u_id_usuario = kr.r_id_usuario
+        JOIN {ESQUEMA}.clases c ON c.c_id_clase = kr.r_id_clase
+        JOIN {ESQUEMA}.instructor i ON i.i_id_instructor = kr.r_id_instructor
+        JOIN {ESQUEMA}.plan_membresia pm ON pm.p_id_plan = kr.r_id_plan
+        ORDER BY kr.r_id_reserva DESC
+    """)
+
+    if not reservas_df.empty:
+        reservas_df["precio"] = reservas_df["precio"].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "$0.00")
+        st.dataframe(reservas_df, use_container_width=True, hide_index=True)
+    else:
+        st.info("Aún no se han agendado reservas en el sistema.")
