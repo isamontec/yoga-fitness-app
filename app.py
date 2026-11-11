@@ -175,7 +175,7 @@ elif opcion_menu == "Inscribirse":
             genero = st.selectbox("Género", ["femenino", "masculino", "otro"])
         with col_b:
             direccion = st.text_input("Dirección")
-            # RANGO DE EDAD: 1965 a 2009
+            # --- RANGO DE EDAD CORREGIDO: 1965 a 2009 ---
             fecha_nac = st.date_input(
                 "Fecha de Nacimiento *",
                 value=dt.date(1995, 1, 1),
