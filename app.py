@@ -33,6 +33,10 @@ st.markdown(
     /* Descripción de ejercicios */
     .desc-box {background: #FAFAFA; border-left: 4px solid #CE93D8; padding: 15px; border-radius: 8px; margin-bottom: 10px;}
     .desc-title {color: #8E24AA; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;}
+    
+    /* Plan Premium Destacado */
+    .premium-plan {background: linear-gradient(135deg, #FFF0F5, #FCE4EC); border: 2px solid #D81B60; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px;}
+    .premium-plan h3 {color: #C2185B; margin-top: 0;}
     </style>
     <div class="banner">
         <h1>Lumina Zen Studio</h1>
@@ -94,7 +98,7 @@ def insertar_con_id(sql, col_id, params):
 
 opcion_menu = st.sidebar.radio(
     "Menú del Studio",
-    ["Planes y Precios", "Clases y Horarios", "Instructores", "Inscribirse", "Agendar Reserva", "Ver mis Reservas"]
+    ["Planes y Precios", "Clases y Horarios", "Instructores", "Inscribirse", "Agendar Reserva", "Ver mis Reservas", "📊 Panel de Administrador"]
 )
 
 # -----------------------------------------------------------------
@@ -124,7 +128,14 @@ if opcion_menu == "Planes y Precios":
     
     st.write("---")
     
-    planes_df = consultar(f"SELECT p_id_plan AS id, p_nombre_plan AS plan, p_tipo_clase AS disciplina, p_duracion_plan AS duracion_dias, p_precio AS precio FROM {ESQUEMA}.plan_membresia ORDER BY p_precio ASC")
+    st.markdown("""
+        <div class="premium-plan">
+            <h3>⭐ PLAN RECOMENDADO: Premium Pilates & Full Studio ⭐</h3>
+            <p>Acceso ilimitado a todas nuestras clases: Reformer, Vinyasa, Hot Pilates y Barre. La experiencia Lumina completa para tu transformación.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    planes_df = consultar(f"SELECT p_id_plan AS id, p_nombre_plan AS plan, p_tipo_clase AS disciplina, p_duracion_plan AS duracion_dias, p_precio AS precio FROM {ESQUEMA}.plan_membresia ORDER BY p_precio DESC")
 
     if not planes_df.empty:
         planes_df["precio"] = planes_df["precio"].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "$0.00")
@@ -230,7 +241,19 @@ elif opcion_menu == "Agendar Reserva":
                 with col1:
                     cls_sel = st.selectbox("Selecciona la Clase", clases_perm["c_id_clase"].tolist(), format_func=lambda x: clases_perm[clases_perm['c_id_clase'] == x]['c_nombre_clase'].iloc[0])
                     dia_sel = st.selectbox("Día", ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"])
-                    hora_sel = st.selectbox("Hora", ["06:00 AM", "08:00 AM", "10:00 AM", "05:00 PM", "06:00 PM", "08:00 PM"])
+                    
+                    # SELECCIÓN DE HORA CON MULTIPLES OPCIONES
+                    franja_sel = st.selectbox("Franja Horaria", ["Mañana (AM)", "Mediodía (PM)", "Tarde/Noche (PM)"])
+                    
+                    if franja_sel == "Mañana (AM)":
+                        opciones_hora = ["06:00 AM", "08:00 AM", "10:00 AM"]
+                    elif franja_sel == "Mediodía (PM)":
+                        opciones_hora = ["12:00 PM", "02:00 PM"]
+                    else:
+                        opciones_hora = ["04:00 PM", "06:00 PM", "08:00 PM"]
+                        
+                    hora_sel = st.selectbox("Hora Exacta", opciones_hora)
+                    
                 with col2:
                     if not instructores.empty:
                         ins_sel = st.selectbox("Instructor", instructores["i_id_instructor"].tolist(), format_func=lambda x: instructores[instructores['i_id_instructor'] == x]['i_nombre_completo'].iloc[0])
@@ -274,3 +297,23 @@ elif opcion_menu == "Ver mis Reservas":
         st.dataframe(historial, use_container_width=True, hide_index=True)
     else:
         st.info("Aún no tienes reservas agendadas con este ID.")
+
+# -----------------------------------------------------------------
+# VISTA 7: PANEL DE ADMINISTRADOR (Módulo Privado)
+# -----------------------------------------------------------------
+elif opcion_menu == "📊 Panel de Administrador":
+    st.header("Acceso Privado Administrador")
+    
+    codigo_acceso = st.text_input("Ingresa el código PIN para acceder:", type="password")
+    
+    if codigo_acceso == "001":
+        st.success("Acceso concedido.")
+        st.write("---")
+        st.subheader("Resumen de Ganancias y Reservas")
+        
+        # Calcular ganancias totales de las reservas confirmadas
+        ganancias_data = consultar(f"SELECT SUM(r_precio) as total_ingresos, COUNT(r_id_reserva) as total_reservas FROM {ESQUEMA}.kardex_reserva WHERE r_estado_reserva = 'confirmada'")
+        
+        col_m1, col_m2 = st.columns(2)
+        if not ganancias_data.empty:
+            total_ingresos = ganancias_data.iloc[0]['total_ingresos'] if pd.notnull(ganancias_data.iloc[0]['total_ingresos']) else 0
