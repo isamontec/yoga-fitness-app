@@ -1,43 +1,34 @@
-Wallet Expiry Date
------------------------
-This wallet was downloaded on 2026-10-28 21:56:26.015091494 UTC.
-The SSL certificates provided in this wallet will expire on 2031-10-27 21:53:44.736006 UTC.
-In order to avoid any service interruptions due to an expired SSL certificate, you must re-download the wallet before this date.
+----------------- 1. Resumen Ejecutivo
+Lumina Zen & Pilates Studio es una plataforma web integral transaccional y analítica diseñada para la gestión operativa y comercial de un centro deportivo de Yoga, Pilates, Barre y entrenamientos funcionales. 
+El sistema permite la interacción en tiempo real entre clientes (alumnas) y la administración del estudio mediante la automatización del catálogo de servicios, la inscripción de usuarios, el agendamiento de clases y la auditoría de métricas de negocio.
 
-Autonomous Database Tools and Resources
----------------------------------------
 
-Database Actions
-----------------
-Load, explore, transform, model, and catalog your data. Use an SQL worksheet, build REST interfaces and low-code apps, manage users and connections, build and apply machine learning models. 
-Access Link:
+-------------------2. Arquitectura y Tech Stack
+Lenguaje de Programación: Python 3.x (lógica de negocio, manejo de estructuras de datos y validaciones).
+Framework de Interfaz de Usuario: Streamlit (despliegue de dashboards interactivos, formularios responsivos y componentes dinámicos con estilos CSS personalizados).
+Motor de Base de Datos: Oracle Cloud Autonomous Database (procesamiento de transacciones relacionales ACID).
+Conector BD: Librería oracledb operando mediante conexión segura (Thin/Thick mode asistido por Oracle Wallet).
+Manipulación de Datos: Pandas (procesamiento de datos relacionales a estructuras DataFrame).
 
-https://G036CBA6CEC37EF-CONEXION22.adb.sa-bogota-1.oraclecloudapps.com/ords/sql-developer
 
-Graph Studio
-------------
-Oracle Graph Studio lets you create scalable property graph databases. Graph Studio automates the creation of graph models and in-memory graphs from database tables. It includes notebooks and developer APIs that allow you to execute graph queries using PGQL (an SQL-like graph query language) and over 50 built-in graph algorithms. Graph Studio also offers dozens of visualization, including native graph visualization. 
-Access Link:
+--------------------3. Modelo Relacional de la Base de Datos (5 Tablas Clave)
+El sistema opera sobre un esquema relacional normalizado (ADMIN) compuesto por las siguientes entidades:
+plan_membresia (Catálogo de Productos): Almacena la oferta comercial, precio base (p_precio), precio promocional (p_precio_descuento), duración en días (p_duracion_plan), límite de sesiones (p_limite_clases) y la disciplina asociada (p_tipo_clase).
+instructor (Talento Humano): Almacena el perfil técnico del equipo docente, incluyendo nombres, especialidad (i_especialidad), tipo de contrato, número y detalle de certificaciones.
+clases (Oferta Operativa): Registra la parrilla de sesiones programadas (c_nombre_clase), disciplina (c_tipo_clase), día (c_dia), franja horaria (c_horario), salón (c_salon_clase), intensidad y aforo máximo (c_cupo_max).
+usuario (Directorio de Clientes): Registra los datos demográficos y de salud de los miembros, incluyendo nombre, correo, teléfono, género, dirección, lesiones/condición médica y fecha de nacimiento.
+kardex_reserva (Tabla Transaccional / Hechos): Registra la interacción del cliente al agendar una sesión. Almacena la relación entre usuario, clase, instructor, plan contratado, fecha/hora elegida, valor transaccionado (r_precio), estado del cupo (confirmado/en espera/cancelado) y control de asistencia.
 
-https://G036CBA6CEC37EF-CONEXION22.adb.sa-bogota-1.oraclecloudapps.com/graphstudio
 
-Oracle Application Express
---------------------------
-Oracle Application Express (APEX) is a low-code development platform that enables you to build scalable, secure enterprise apps that can be deployed anywhere. 
-Access Link:
-
-https://G036CBA6CEC37EF-CONEXION22.adb.sa-bogota-1.oraclecloudapps.com/ords/apex
-
-Oracle Machine Learning User Interface
---------------------------------------
-The Oracle Machine Learning User Interface provides immediate access to the Oracle Machine Learning components and functionality on Autonomous Database, including OML Notebooks, OML AutoML UI, OML Models, and template example notebooks. Through OML Notebooks, users can develop notebooks comprised of SQL, PL/SQL, R, Python, and markdown paragraphs and use OML4SQL, OML4R, and OML4Py APIs.These APIs provide access to over 30 parallelized, scalable in-database machine learningalgorithms, supporting classification, regression, anomaly detection, clustering, associations, attribute importance, feature extraction, and times series forecasting, among others. Through OML4Py and OML4R, users can invoke user-defined Python and R functions in engines spawned and controlled by the database environment, with optional data-parallel and task-parallel invocation, as well as deploy those user-defined functions from SQL and REST APIs.
-Access Link:
-
-https://G036CBA6CEC37EF-CONEXION22.adb.sa-bogota-1.oraclecloudapps.com/oml
-
-SODA Drivers
-------------
-Simple Oracle Document Access (SODA) is a set of APIs that let you work with JSON documents managed by the Oracle Database without needing to use SQL. SODA drivers are available for REST, Java, Node.js, Python, PL/SQL, and C. 
-Access Link:
-
-https://www.oracle.com/database/technologies/appdev/json.html#sodadrivers
+--------------------4. Módulos y Funcionalidades del Aplicativo Web
+- Inicio & Descripción de Disciplinas: Módulo informativo estilizado que detalla los beneficios y técnicas de las modalidades ofrecidas (Yoga Vinyasa, Hot Yoga, Pilates Reformer, Hot Pilates, Barre Fit y Hatha & Relax).
+-  Planes & Precios: Visor interactivo del catálogo de membresías que permite consultar detalles de inversión, precios promocionales y límites de clases.
+- Clases & Horarios: Parrilla dinámica que permite filtrar la oferta semanal por disciplina, salón, nivel de intensidad y estado del cupo.
+- Staff de Instructores: Directorio con la trayectoria, certificaciones y especialidades de los docentes activos.
+- Formulario de Inscripción (Nuevas Alumnas): Módulo de registro transaccional con validaciones de campos obligatorios, selección de plan inicial y control de fechas de nacimiento en el rango de 1965 a 2009. Retorna un ID único de usuario generado mediante cláusula SQL RETURNING INTO.
+- Agendamiento de Reservas con Lógica de Membresías: Sistema dinámico donde:
+El usuario ingresa su ID.
+El sistema valida la membresía: los usuarios de planes estándar acceden solo a las clases de su disciplina, mientras que las alumnas con Plan Premium Pilates habilitan el acceso ilimitado a todas las clases del estudio.
+Permite la selección asistida de clase, franja horaria (AM / PM), instructor y fecha de asistencia, registrando la transacción en tiempo real en la tabla kardex_reserva.
+- Consulta Privada de Reservas: Filtro de privacidad donde la usuaria digita su ID único para auditar exclusivamente su historial personal de sesiones reservadas.
+-Panel Gerencial de Administración (Protected PIN 001): Cuadro de mando ejecutivo exclusivo para administradores que calcula métricas financieras acumuladas (kpis de ingresos en COP, reservas globales y clientes totales activos) y permite auditar la totalidad del kardex transaccional.
