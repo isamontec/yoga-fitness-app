@@ -6,31 +6,37 @@ import streamlit as st
 # Configuración inicial de la página
 st.set_page_config(page_title="Lumina Zen Studio", layout="wide")
 
-# Estilos personalizados (Rosados, minimalista y mensajes grandes)
+# Estilos personalizados (Girly, rosado pastel, lila y minimalista)
 st.markdown(
     """
     <style>
-    .banner {background: linear-gradient(90deg, #F06292, #E91E63 60%, #C2185B); color:#fff;
-             padding:1.2rem 1.8rem; border-radius:12px; margin-bottom:1.5rem;}
-    .banner h1 {margin:0; font-size:2.2rem; color:#fff; font-weight: 300;}
-    .banner p {margin:0; opacity:.9; font-size:1.1rem; font-weight: 300;}
+    .banner {background: linear-gradient(90deg, #F48FB1, #E1BEE7 60%, #CE93D8); color:#fff;
+             padding:1.5rem 2rem; border-radius:15px; margin-bottom:1.5rem; text-align: center;
+             box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+    .banner h1 {margin:0; font-size:2.8rem; color:#fff; font-family: 'Georgia', serif; letter-spacing: 2px;}
+    .banner p {margin:0; opacity:.9; font-size:1.2rem; font-weight: 300; font-style: italic;}
     
-    div[data-testid="stMetric"] {background:#FCE4EC; border:1px solid #F8BBD0; border-left:5px solid #E91E63;
-                                 padding:.6rem .9rem; border-radius:8px;}
+    div[data-testid="stMetric"] {background:#FFF0F5; border:1px solid #F8BBD0; border-left:5px solid #D81B60;
+                                 padding:.8rem 1rem; border-radius:10px;}
     
     /* Mensajes gigantes de éxito */
     .success-msg {
-        background-color: #D1C4E9; color: #4A148C; padding: 25px; 
-        border-radius: 10px; font-size: 24px; font-weight: bold; text-align: center;
-        border: 2px solid #7E57C2; margin-top: 20px; margin-bottom: 20px;
+        background-color: #FCE4EC; color: #AD1457; padding: 20px; 
+        border-radius: 12px; font-size: 22px; font-weight: bold; text-align: center;
+        border: 2px dashed #F06292; margin: 20px 0;
     }
     
-    .stButton>button {background-color: #E91E63; color: white; border-radius: 8px;}
-    .stButton>button:hover {background-color: #C2185B; border-color: #C2185B;}
+    /* Botones femeninos */
+    .stButton>button {background-color: #F06292; color: white; border-radius: 20px; border: none; padding: 10px 24px;}
+    .stButton>button:hover {background-color: #D81B60; color: white;}
+    
+    /* Descripción de ejercicios */
+    .desc-box {background: #FAFAFA; border-left: 4px solid #CE93D8; padding: 15px; border-radius: 8px; margin-bottom: 10px;}
+    .desc-title {color: #8E24AA; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;}
     </style>
     <div class="banner">
         <h1>Lumina Zen Studio</h1>
-        <p>Encuentra tu equilibrio. Planes de membresía, clases y reservas en línea.</p>
+        <p>Tu espacio seguro para sanar, tonificar y brillar desde adentro hacia afuera.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -87,15 +93,37 @@ def insertar_con_id(sql, col_id, params):
 # ---------------- 3. Menú Principal ----------------
 
 opcion_menu = st.sidebar.radio(
-    "Navegación",
+    "Menú del Studio",
     ["Planes y Precios", "Clases y Horarios", "Instructores", "Inscribirse", "Agendar Reserva", "Ver mis Reservas"]
 )
 
 # -----------------------------------------------------------------
-# VISTA 1: PLANES Y PRECIOS
+# VISTA 1: PLANES, PRECIOS Y DESCRIPCIÓN DE CLASES
 # -----------------------------------------------------------------
 if opcion_menu == "Planes y Precios":
-    st.header("Planes de Membresía")
+    st.header("Nuestros Planes y Disciplinas")
+    
+    st.markdown("""
+        <div class="desc-box">
+            <div class="desc-title">✨ Yoga & Vinyasa</div>
+            Conecta cuerpo y mente a través de la respiración. Ideal para mejorar la flexibilidad, reducir el estrés y encontrar tu centro. Vinyasa ofrece secuencias más fluidas y dinámicas.
+        </div>
+        <div class="desc-box">
+            <div class="desc-title">🔥 Hot Yoga & Hot Pilates</div>
+            Practicados en un salón aclimatado. El calor ayuda a desintoxicar el cuerpo, profundizar los estiramientos y quemar calorías intensamente.
+        </div>
+        <div class="desc-box">
+            <div class="desc-title">🩰 Barre</div>
+            Una mezcla elegante de ballet, pilates y yoga. Utiliza la barra de ballet para realizar micromovimientos que tonifican y alargan los músculos sin impacto.
+        </div>
+        <div class="desc-box">
+            <div class="desc-title">💫 Pilates & Pilates Reformer</div>
+            Enfocado en fortalecer el "core" (centro del cuerpo). El Reformer utiliza una cama con poleas y resortes para crear resistencia, mejorando la postura, fuerza y alineación.
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.write("---")
+    
     planes_df = consultar(f"SELECT p_id_plan AS id, p_nombre_plan AS plan, p_tipo_clase AS disciplina, p_duracion_plan AS duracion_dias, p_precio AS precio FROM {ESQUEMA}.plan_membresia ORDER BY p_precio ASC")
 
     if not planes_df.empty:
@@ -108,7 +136,7 @@ if opcion_menu == "Planes y Precios":
 # VISTA 2: CLASES Y HORARIOS
 # -----------------------------------------------------------------
 elif opcion_menu == "Clases y Horarios":
-    st.header("Clases Programadas")
+    st.header("Horarios de Sesiones")
     clases_df = consultar(f"SELECT c_nombre_clase AS nombre_clase, c_tipo_clase AS disciplina, c_dia AS dia, c_horario AS horario, c_salon_clase AS salon FROM {ESQUEMA}.clases ORDER BY c_id_clase ASC")
     st.dataframe(clases_df, use_container_width=True, hide_index=True)
 
@@ -116,7 +144,7 @@ elif opcion_menu == "Clases y Horarios":
 # VISTA 3: INSTRUCTORES
 # -----------------------------------------------------------------
 elif opcion_menu == "Instructores":
-    st.header("Nuestro Equipo")
+    st.header("Nuestro Staff")
     instructores_df = consultar(f"SELECT i_nombre_completo AS nombre, i_especialidad AS especialidad, i_tipo_certificacion AS certificacion FROM {ESQUEMA}.instructor WHERE i_estado = 'activo' ORDER BY i_nombre_completo ASC")
     st.dataframe(instructores_df, use_container_width=True, hide_index=True)
 
@@ -124,7 +152,7 @@ elif opcion_menu == "Instructores":
 # VISTA 4: INSCRIBIRSE (NUEVO CLIENTE)
 # -----------------------------------------------------------------
 elif opcion_menu == "Inscribirse":
-    st.header("Formulario de Inscripción")
+    st.header("Únete al Studio")
     planes_op = consultar(f"SELECT p_id_plan, p_nombre_plan, p_precio FROM {ESQUEMA}.plan_membresia")
 
     with st.form("form_inscripcion", clear_on_submit=True):
@@ -136,11 +164,11 @@ elif opcion_menu == "Inscribirse":
             genero = st.selectbox("Género", ["femenino", "masculino", "otro"])
         with col_b:
             direccion = st.text_input("Dirección")
-            # EDAD HASTA 1960
+            # RANGO DE EDAD: 1965 a 2009
             fecha_nac = st.date_input(
                 "Fecha de Nacimiento *",
                 value=dt.date(1995, 1, 1),
-                min_value=dt.date(1960, 1, 1),
+                min_value=dt.date(1965, 1, 1),
                 max_value=dt.date(2009, 12, 31)
             )
             plan_elegido = st.selectbox("Selecciona tu Plan", planes_op["p_id_plan"].tolist(), format_func=lambda x: f"{planes_op[planes_op['p_id_plan'] == x]['p_nombre_plan'].iloc[0]}")
@@ -157,17 +185,16 @@ elif opcion_menu == "Inscribirse":
                 nuevo_id = insertar_con_id(SQL, "u_id_usuario", p)
                 st.session_state["mi_id"] = nuevo_id
                 
-                # MENSAJE GIGANTE DE CONFIRMACIÓN
                 st.balloons()
                 st.markdown(f'<div class="success-msg">Inscripción Exitosa.<br>Tu ID de Cliente es: #{nuevo_id}</div>', unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"Error: {e}")
 
 # -----------------------------------------------------------------
-# VISTA 5: AGENDAR RESERVA (Horarios Mejorados)
+# VISTA 5: AGENDAR RESERVA (Lógica de Planes Premium)
 # -----------------------------------------------------------------
 elif opcion_menu == "Agendar Reserva":
-    st.header("Agendamiento de Clases")
+    st.header("Agendamiento")
     
     id_default = st.session_state.get("mi_id", 12)
     id_ingresado = st.number_input("Ingresa tu ID de Cliente:", min_value=1, value=int(id_default), step=1)
@@ -178,19 +205,30 @@ elif opcion_menu == "Agendar Reserva":
         st.error("No se encontró el usuario. Inscríbete primero.")
     else:
         usr = usuario_info.iloc[0]
-        st.success(f"Cliente: {usr['u_nombre_completo']} | Disciplina Permitida: {usr['p_tipo_clase'].title()}")
+        nombre_plan = usr['p_nombre_plan'].lower()
+        
+        # VALIDACIÓN DEL PLAN PREMIUM
+        es_premium = "premium" in nombre_plan or "pilates" in nombre_plan
+        
+        if es_premium:
+            st.success(f"Hola {usr['u_nombre_completo']} | Tienes el **{usr['p_nombre_plan']}**. ¡Puedes reservar TODAS las disciplinas del Studio!")
+            query_clases = f"SELECT c_id_clase, c_nombre_clase FROM {ESQUEMA}.clases"
+            query_inst = f"SELECT i_id_instructor, i_nombre_completo FROM {ESQUEMA}.instructor WHERE i_estado = 'activo'"
+        else:
+            st.success(f"Hola {usr['u_nombre_completo']} | Tienes el **{usr['p_nombre_plan']}**. Puedes reservar clases de: {usr['p_tipo_clase'].title()}")
+            query_clases = f"SELECT c_id_clase, c_nombre_clase FROM {ESQUEMA}.clases WHERE LOWER(c_tipo_clase) = '{usr['p_tipo_clase'].lower()}'"
+            query_inst = f"SELECT i_id_instructor, i_nombre_completo FROM {ESQUEMA}.instructor WHERE LOWER(i_especialidad) LIKE '%{usr['p_tipo_clase'].lower()}%'"
 
-        clases_perm = consultar(f"SELECT c_id_clase, c_nombre_clase FROM {ESQUEMA}.clases WHERE LOWER(c_tipo_clase) = '{usr['p_tipo_clase'].lower()}'")
-        instructores = consultar(f"SELECT i_id_instructor, i_nombre_completo FROM {ESQUEMA}.instructor WHERE LOWER(i_especialidad) LIKE '%{usr['p_tipo_clase'].lower()}%'")
+        clases_perm = consultar(query_clases)
+        instructores = consultar(query_inst)
 
         if clases_perm.empty:
-            st.warning("No hay clases para esta disciplina.")
+            st.warning("No hay clases disponibles en este momento.")
         else:
             with st.form("form_reserva", clear_on_submit=True):
                 col1, col2 = st.columns(2)
                 with col1:
-                    cls_sel = st.selectbox("Clase", clases_perm["c_id_clase"].tolist(), format_func=lambda x: clases_perm[clases_perm['c_id_clase'] == x]['c_nombre_clase'].iloc[0])
-                    # SELECCIÓN PRECISA DE DÍA Y HORA
+                    cls_sel = st.selectbox("Selecciona la Clase", clases_perm["c_id_clase"].tolist(), format_func=lambda x: clases_perm[clases_perm['c_id_clase'] == x]['c_nombre_clase'].iloc[0])
                     dia_sel = st.selectbox("Día", ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"])
                     hora_sel = st.selectbox("Hora", ["06:00 AM", "08:00 AM", "10:00 AM", "05:00 PM", "06:00 PM", "08:00 PM"])
                 with col2:
@@ -208,16 +246,31 @@ elif opcion_menu == "Agendar Reserva":
                     p = {"usr": int(usr['u_id_usuario']), "cls": int(cls_sel), "ins": int(ins_sel), "pln": int(usr['u_id_plan']), "fec": fecha_sel, "hor": hora_sel, "prc": float(usr['p_precio'])}
                     res_id = insertar_con_id(SQL, "r_id_reserva", p)
                     
-                    # MENSAJE GIGANTE DE CONFIRMACIÓN
                     st.balloons()
-                    st.markdown(f'<div class="success-msg">Reserva Confirmada.<br>Tu ID de Reserva es: #{res_id}<br>Te esperamos el {dia_sel} a las {hora_sel}.</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="success-msg">¡Reserva Confirmada!<br>Código de Reserva: #{res_id}<br>Te esperamos el {dia_sel} a las {hora_sel}.</div>', unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f"Error: {e}")
 
 # -----------------------------------------------------------------
-# VISTA 6: VER RESERVAS
+# VISTA 6: VER MIS RESERVAS (Solo las privadas del usuario)
 # -----------------------------------------------------------------
 elif opcion_menu == "Ver mis Reservas":
-    st.header("Historial de Reservas")
-    historial = consultar(f"SELECT kr.r_id_reserva AS id_reserva, u.u_nombre_completo AS cliente, c.c_nombre_clase AS clase, kr.r_hora_reserva AS hora, i.i_nombre_completo AS instructor FROM {ESQUEMA}.kardex_reserva kr JOIN {ESQUEMA}.usuario u ON u.u_id_usuario = kr.r_id_usuario JOIN {ESQUEMA}.clases c ON c.c_id_clase = kr.r_id_clase JOIN {ESQUEMA}.instructor i ON i.i_id_instructor = kr.r_id_instructor ORDER BY kr.r_id_reserva DESC")
-    st.dataframe(historial, use_container_width=True, hide_index=True)
+    st.header("Mi Historial de Reservas")
+    
+    id_default = st.session_state.get("mi_id", 12)
+    id_ingresado_historial = st.number_input("Ingresa tu ID de Cliente para ver tus reservas:", min_value=1, value=int(id_default), step=1)
+    
+    historial = consultar(f"""
+        SELECT kr.r_id_reserva AS id_reserva, c.c_nombre_clase AS clase, kr.r_hora_reserva AS hora, i.i_nombre_completo AS instructor 
+        FROM {ESQUEMA}.kardex_reserva kr 
+        JOIN {ESQUEMA}.clases c ON c.c_id_clase = kr.r_id_clase 
+        JOIN {ESQUEMA}.instructor i ON i.i_id_instructor = kr.r_id_instructor 
+        WHERE kr.r_id_usuario = {id_ingresado_historial}
+        ORDER BY kr.r_id_reserva DESC
+    """)
+    
+    if not historial.empty:
+        st.success(f"Aquí tienes tus reservas, Cliente #{id_ingresado_historial}:")
+        st.dataframe(historial, use_container_width=True, hide_index=True)
+    else:
+        st.info("Aún no tienes reservas agendadas con este ID.")
