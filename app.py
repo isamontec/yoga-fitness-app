@@ -311,9 +311,48 @@ elif opcion_menu == "📊 Panel de Administrador":
         st.write("---")
         st.subheader("Resumen de Ganancias y Reservas")
         
-        # Calcular ganancias totales de las reservas confirmadas
-        ganancias_data = consultar(f"SELECT SUM(r_precio) as total_ingresos, COUNT(r_id_reserva) as total_reservas FROM {ESQUEMA}.kardex_reserva WHERE r_estado_reserva = 'confirmada'")
+        # OBTENEMOS LOS TOTALES (Ingresos y Cantidad de Reservas)
+        ganancias_query = f"""
+            SELECT SUM(r_precio) as total_ingresos, COUNT(r_id_reserva) as total_reservas 
+            FROM {ESQUEMA}.kardex_reserva
+        """
+        ganancias_data = consultar(ganancias_query)
         
         col_m1, col_m2 = st.columns(2)
         if not ganancias_data.empty:
-            total_ingresos = ganancias_data.iloc[0]['total_ingresos'] if pd.notnull(ganancias_data.iloc[0]['total_ingresos']) else 0
+            # Manejamos el caso en que la suma sea Nula (0 reservas)
+            total_ingresos = ganancias_data.iloc[0]['total_ingresos']
+            if pd.isna(total_ingresos):
+                total_ingresos = 0.0
+                
+            total_reservas = ganancias_data.iloc[0]['total_reservas']
+            
+            col_m1.metric("Ingresos Totales (Mes)", f"${total_ingresos:,.2f}")
+            col_m2.metric("Total Reservas Agendadas", int(total_reservas))
+            
+        st.write("---")
+        st.subheader("Historial Completo de Reservas (Clientes y Pagos)")
+        
+        # TABLA DETALLADA DEL HISTORIAL
+        historial_admin = consultar(f"""
+            SELECT kr.r_id_reserva AS id_reserva, 
+                   TO_CHAR(kr.r_fecha_reserva, 'YYYY-MM-DD') AS fecha, 
+                   u.u_nombre_completo AS cliente, 
+                   c.c_nombre_clase AS clase, 
+                   kr.r_precio AS pago, 
+                   kr.r_estado_reserva AS estado 
+            FROM {ESQUEMA}.kardex_reserva kr 
+            JOIN {ESQUEMA}.usuario u ON u.u_id_usuario = kr.r_id_usuario 
+            JOIN {ESQUEMA}.clases c ON c.c_id_clase = kr.r_id_clase 
+            ORDER BY kr.r_id_reserva DESC
+        """)
+        
+        if not historial_admin.empty:
+            # Formateamos la columna 'pago' para que se vea como moneda
+            historial_admin["pago"] = historial_admin["pago"].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "$0.00")
+            st.dataframe(historial_admin, use_container_width=True, hide_index=True)
+        else:
+            st.info("No hay reservas registradas en el sistema aún.")
+            
+    elif codigo_acceso:
+        st.error("Código PIN incorrecto.")
