@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="tGE5glpOyQNxa8r9YyR7">
+    <mxGraphModel dx="948" dy="568" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-27" edge="1" parent="1" source="IRY8op-xdPW2oBHtM5zc-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;" target="IRY8op-xdPW2oBHtM5zc-25">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="610" />
+              <mxPoint x="385" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-10" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="usuario" vertex="1">
+          <mxGeometry height="230" width="160" x="80" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-11" parent="IRY8op-xdPW2oBHtM5zc-10" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="+ u_id_usuario (PK)&lt;div&gt;+ u_nombre_completo&lt;/div&gt;&lt;div&gt;+ u_id_plan (FK)&lt;/div&gt;&lt;div&gt;+ u_genero&lt;/div&gt;&lt;div&gt;+ u_estado&lt;/div&gt;&lt;div&gt;+ u_direccion_residencia&lt;/div&gt;&lt;div&gt;+ u_telefono&lt;/div&gt;&lt;div&gt;+ u_correro_electronico&lt;/div&gt;&lt;div&gt;+ u_condicion_medica&lt;/div&gt;&lt;div&gt;+ u_fecha_naciemiento&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="180" width="160" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-30" edge="1" parent="1" source="IRY8op-xdPW2oBHtM5zc-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;" target="IRY8op-xdPW2oBHtM5zc-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-16" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="plan_membresia" vertex="1">
+          <mxGeometry height="320" width="160" x="80" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-17" parent="IRY8op-xdPW2oBHtM5zc-16" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="+ p_id_plan (PK)&lt;div&gt;+ p_nombre_plan&lt;/div&gt;&lt;div&gt;+ p_duracion_plan&lt;/div&gt;&lt;div&gt;+ p_fecha_inicio&lt;/div&gt;&lt;div&gt;+ p_fecha_finalizacion&lt;/div&gt;&lt;div&gt;+ p_limite_clases&lt;/div&gt;&lt;div&gt;+ p_tipo_clase&lt;/div&gt;&lt;div&gt;+ p_ precio&lt;/div&gt;&lt;div&gt;+ p_precio_descuento&lt;/div&gt;&lt;div&gt;+ p_cantidad_planes&lt;/div&gt;&lt;div&gt;+ p_estado&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="270" width="160" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-29" edge="1" parent="1" source="IRY8op-xdPW2oBHtM5zc-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;" target="IRY8op-xdPW2oBHtM5zc-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-19" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="instructor" vertex="1">
+          <mxGeometry height="200" width="160" x="610" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-20" parent="IRY8op-xdPW2oBHtM5zc-19" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="+ i_id_instructor (PK)&lt;div&gt;+ i_nombre_completo&lt;/div&gt;&lt;div&gt;+ i_especialidad&lt;/div&gt;&lt;div&gt;+ i_tipo_contrato&lt;/div&gt;&lt;div&gt;+ i_cantidad_certificaciones&lt;/div&gt;&lt;div&gt;+ i_tipo_certificacion&lt;/div&gt;&lt;div&gt;+ i_estado&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="150" width="160" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-21" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="clases" vertex="1">
+          <mxGeometry height="210" width="160" x="610" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-22" parent="IRY8op-xdPW2oBHtM5zc-21" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="+ c_id_clase (PK)&lt;br&gt;&lt;div&gt;+ c_nombre_clase&lt;/div&gt;&lt;div&gt;+ c_tipo_clase&lt;/div&gt;&lt;div&gt;+ c_dia&lt;/div&gt;&lt;div&gt;+ c_salon_clase&lt;/div&gt;&lt;div&gt;+ c_horario&lt;/div&gt;&lt;div&gt;+ c_cupo_max&lt;/div&gt;&lt;div&gt;+ c_intensidad&lt;/div&gt;&lt;div&gt;+ c_modalidad&amp;nbsp;&lt;/div&gt;&lt;div&gt;+ c_estado&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="160" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-24" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="kardex_reserva" vertex="1">
+          <mxGeometry height="240" width="160" x="345" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-25" parent="IRY8op-xdPW2oBHtM5zc-24" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="+ r_id_reserva (PK)&lt;br&gt;&lt;div&gt;+ r_id_usuario (FK)&lt;/div&gt;&lt;div&gt;+ r_id_clase (FK)&lt;/div&gt;&lt;div&gt;+ r_id_instructor (FK)&lt;/div&gt;&lt;div&gt;+ r_id_plan (FK)&lt;/div&gt;&lt;div&gt;+ r_fecha_reserva&lt;/div&gt;&lt;div&gt;+ r_hora_reserva&lt;/div&gt;&lt;div&gt;+ r_precio&lt;/div&gt;&lt;div&gt;+ restado_asistencia&lt;/div&gt;&lt;div&gt;+ r_estado_reserva&lt;/div&gt;" vertex="1">
+          <mxGeometry height="190" width="160" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-26" edge="1" parent="1" source="IRY8op-xdPW2oBHtM5zc-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.431;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;" target="IRY8op-xdPW2oBHtM5zc-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IRY8op-xdPW2oBHtM5zc-28" edge="1" parent="1" source="IRY8op-xdPW2oBHtM5zc-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.669;entryY=1.005;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;" target="IRY8op-xdPW2oBHtM5zc-25">
+          <mxGeometry relative="1" x="-0.0511" as="geometry">
+            <Array as="points">
+              <mxPoint x="452" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
